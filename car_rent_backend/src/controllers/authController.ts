@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 import { validationResult } from 'express-validator';
+import { sendRegistrationPendingEmail } from '../services/emailService'; // Import new email function
 
 export const register = async (req: Request, res: Response) => {
   const errors = validationResult(req);
@@ -22,7 +23,7 @@ export const register = async (req: Request, res: Response) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Set status to 'pending' for owners
+    // Set status to 'pending' for owners, 'active' for customers
     const status = role === 'owner' ? 'pending' : 'active';
 
     // Create user
@@ -38,7 +39,15 @@ export const register = async (req: Request, res: Response) => {
 
     await user.save();
 
-    // Generate JWT
+    // Send registration pending email for owners
+    if (role === 'owner') {
+      await sendRegistrationPendingEmail({ to: email, userName: name });
+      return res.status(201).json({
+        message: 'Registration successful. Your account is pending admin approval. You will receive an email once your account is approved.',
+      });
+    }
+
+    // Generate JWT for customers
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET as string,
@@ -76,6 +85,11 @@ export const login = async (req: Request, res: Response) => {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check status for owners
+    if (user.role === 'owner' && user.status === 'pending') {
+      return res.status(403).json({ message: 'Account awaiting admin approval' });
     }
 
     // Check password

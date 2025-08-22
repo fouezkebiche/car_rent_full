@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createBooking, getBookings } from '../controllers/bookingController';
+import { createBooking, getBookings, getPendingOwnerBookings, getAllBookings, approveBooking, rejectBooking } from '../controllers/bookingController';
 import { authMiddleware, roleMiddleware } from '../middleware/authMiddleware';
 import { check } from 'express-validator';
 
@@ -21,5 +21,9 @@ router.post(
 );
 
 router.get('/', authMiddleware, roleMiddleware(['customer', 'admin']), getBookings);
+router.get('/pending/owner', authMiddleware, roleMiddleware(['owner']), getPendingOwnerBookings);
+router.get('/all', authMiddleware, roleMiddleware(['admin']), getAllBookings);
+router.put('/approve/:bookingId', authMiddleware, roleMiddleware(['owner']), approveBooking);
+router.put('/reject/:bookingId', authMiddleware, roleMiddleware(['owner']), rejectBooking);
 
 export default router;

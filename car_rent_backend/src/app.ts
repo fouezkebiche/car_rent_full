@@ -1,4 +1,5 @@
 import express, { Application } from 'express';
+import path from 'path';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
@@ -16,6 +17,8 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(express.json());
 app.use(cors());
+
+app.use('/uploads', express.static(path.join(__dirname, '../Uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);

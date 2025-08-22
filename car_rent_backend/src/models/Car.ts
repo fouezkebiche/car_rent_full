@@ -12,13 +12,15 @@ export interface ICar extends Document {
   seats: number;
   available: boolean;
   features: string[];
-  location: string;
+  wilaya: string;  // New: Selected wilaya name
+  commune: string; // New: Selected commune name
   rating: number;
   ownerId: Types.ObjectId;
   status: 'pending' | 'approved' | 'rejected';
   rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
+  chauffeur: boolean;
 }
 
 const CarSchema: Schema<ICar> = new Schema({
@@ -33,13 +35,15 @@ const CarSchema: Schema<ICar> = new Schema({
   seats: { type: Number, required: true },
   available: { type: Boolean, default: true },
   features: [{ type: String }],
-  location: { type: String, required: true },
+  wilaya: { type: String, required: true },  // New
+  commune: { type: String, required: true }, // New
   rating: { type: Number, default: 0 },
   ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   rejectionReason: { type: String, required: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  chauffeur: { type: Boolean, default: false },
 });
 
 export default model<ICar>('Car', CarSchema);
